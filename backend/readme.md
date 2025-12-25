@@ -1,10 +1,15 @@
 backend/
 │
-├── main.py                 # FastAPI app
+|
+├── main.py  # FastAPI app
+|
 ├── prompt_builder.py       # Prompt engineering
+|
 ├── manim_runner.py         # Runs manim
+|
 ├── llm/
-│   └── gemini_client.py
+|   |
+|   └── gemini_client.py
 │
 ├── generated/
 │   ├── scenes/
