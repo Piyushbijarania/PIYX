@@ -1,4 +1,55 @@
+"use client";
+
+import { useState } from "react";
+
 export default function Home() {
+  const [question, setQuestion] = useState("");
+  const [duration, setDuration] = useState(60);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGenerate = async () => {
+    if (!question.trim()) {
+      setError("Please enter a question");
+      return;
+    }
+
+    setIsGenerating(true);
+    setError(null);
+    setVideoUrl(null);
+
+    try {
+      const response = await fetch("http://localhost:8000/generate-video", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question: question,
+          duration: duration,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to generate video");
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.video_url) {
+        setVideoUrl(`http://localhost:8000${data.video_url}`);
+      } else {
+        throw new Error("Video generation failed");
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred while generating the video");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Navigation */}
@@ -47,37 +98,118 @@ export default function Home() {
                   placeholder="Ask a question (will generate video)..."
                   className="w-full bg-transparent text-white placeholder-gray-500 px-6 py-3 rounded-xl focus:outline-none resize-none text-base"
                   rows={2}
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  disabled={isGenerating}
                 />
                 <div className="flex items-center justify-between px-3 py-1.5">
                   <div className="flex items-center gap-2">
-                    <button className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-700 px-3 py-1.5 rounded-full text-sm transition-colors">
+                    <button 
+                      className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-700 px-3 py-1.5 rounded-full text-sm transition-colors"
+                      disabled={isGenerating}
+                    >
                       <span className="text-xs">➕</span>
                       <span>Upload</span>
                     </button>
-                    <button className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-700 px-3 py-1.5 rounded-full text-sm transition-colors">
-                      <span className="text-xs">⏱️</span>
-                      <span>1 min</span>
-                    </button>
-                    <button className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-700 px-3 py-1.5 rounded-full text-sm transition-colors">
+                    <select
+                      className="bg-gray-800/80 hover:bg-gray-700 px-3 py-1.5 rounded-full text-sm transition-colors cursor-pointer"
+                      value={duration}
+                      onChange={(e) => setDuration(Number(e.target.value))}
+                      disabled={isGenerating}
+                    >
+                      <option value={30}>30 sec</option>
+                      <option value={60}>1 min</option>
+                      <option value={90}>1.5 min</option>
+                      <option value={120}>2 min</option>
+                    </select>
+                    <button 
+                      className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-700 px-3 py-1.5 rounded-full text-sm transition-colors"
+                      disabled={isGenerating}
+                    >
                       <span className="text-xs">🌐</span>
                       <span>English</span>
                     </button>
                   </div>
-                  <button className="bg-gray-700/80 hover:bg-gray-600 p-2 rounded-full transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                    </svg>
+                  <button 
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded-full transition-colors"
+                    onClick={handleGenerate}
+                    disabled={isGenerating || !question.trim()}
+                  >
+                    {isGenerating ? (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                      </svg>
+                    )}
                   </button>
                 </div>
               </div>
             </div>
 
+            {/* Error Display */}
+            {error && (
+              <div className="mb-6 max-w-4xl mx-auto bg-red-900/20 border border-red-500/30 rounded-xl p-4">
+                <p className="text-red-400">{error}</p>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {isGenerating && (
+              <div className="mb-6 max-w-4xl mx-auto bg-blue-900/20 border border-blue-500/30 rounded-xl p-6">
+                <div className="flex items-center justify-center gap-3">
+                  <svg className="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <p className="text-blue-300">Generating your educational video...</p>
+                </div>
+                <p className="text-gray-400 text-sm mt-2">This may take 30-60 seconds</p>
+              </div>
+            )}
+
+            {/* Video Display */}
+            {videoUrl && !isGenerating && (
+              <div className="mb-6 max-w-4xl mx-auto bg-gradient-to-br from-gray-900/50 to-gray-800/50 border border-white/10 rounded-2xl p-4 shadow-2xl">
+                <video 
+                  controls 
+                  className="w-full rounded-xl"
+                  autoPlay
+                >
+                  <source src={videoUrl} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                <div className="mt-4 flex gap-2">
+                  <button 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
+                    onClick={() => window.open(videoUrl, '_blank')}
+                  >
+                    Download Video
+                  </button>
+                  <button 
+                    className="flex-1 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition-colors"
+                    onClick={() => {
+                      setVideoUrl(null);
+                      setQuestion("");
+                    }}
+                  >
+                    Generate New Video
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* CTA Button */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 mb-6">
-              <button className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all hover:scale-105 shadow-lg shadow-gray-900/50 border border-white/10">
-                Watch AI-Generated Video Explanations
-              </button>
-            </div>
+            {!videoUrl && !isGenerating && (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 mb-6">
+                <button className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all hover:scale-105 shadow-lg shadow-gray-900/50 border border-white/10">
+                  Watch AI-Generated Video Explanations
+                </button>
+              </div>
+            )}
 
             {/* Trust Badge */}
             <p className="text-gray-500 text-sm mb-20">
@@ -100,90 +232,32 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Step 1 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-blue-500/50 transition-all">
-              <div className="text-5xl mb-4">📤</div>
-              <h3 className="text-2xl font-bold mb-3">Ask Anything</h3>
+            <div className="bg-gray-900/50 border border-white/10 rounded-2xl p-8">
+              <div className="text-4xl mb-4">📝</div>
+              <h3 className="text-2xl font-bold mb-3">1. Ask Your Question</h3>
               <p className="text-gray-400">
-                Type your question or upload an image of your doubt from textbook, whiteboard, or phone.
+                Type any concept you want to understand - math, science, coding, or any topic
               </p>
             </div>
 
-            {/* Step 2 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-blue-500/50 transition-all">
-              <div className="text-5xl mb-4">⚡</div>
-              <h3 className="text-2xl font-bold mb-3">AI Generates Your Video</h3>
+            <div className="bg-gray-900/50 border border-white/10 rounded-2xl p-8">
+              <div className="text-4xl mb-4">🤖</div>
+              <h3 className="text-2xl font-bold mb-3">2. AI Creates Video</h3>
               <p className="text-gray-400">
-                Our advanced AI engine analyzes your question and creates a unique animated video explanation.
+                Our AI generates custom animations and explanations tailored to your question
               </p>
             </div>
 
-            {/* Step 3 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-blue-500/50 transition-all">
-              <div className="text-5xl mb-4">🎓</div>
-              <h3 className="text-2xl font-bold mb-3">Watch, Learn & Master</h3>
+            <div className="bg-gray-900/50 border border-white/10 rounded-2xl p-8">
+              <div className="text-4xl mb-4">🎬</div>
+              <h3 className="text-2xl font-bold mb-3">3. Watch & Learn</h3>
               <p className="text-gray-400">
-                Get animated, crystal-clear video answers that boost recall and understanding.
+                Get a personalized video explanation with visual animations in seconds
               </p>
             </div>
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Stop Reading. Start Watching.
-          </h2>
-          <p className="text-xl text-gray-400 mb-8">
-            You&apos;re one click away from the future of learning. Get the power of a personal AI study helper.
-          </p>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all hover:scale-105 shadow-lg shadow-blue-600/50">
-            Get Started
-          </button>
-          <p className="text-gray-500 text-sm mt-4">
-            No credit card required • Unlimited videos • Always free
-          </p>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h4 className="font-bold text-lg mb-4">PIYX AI</h4>
-              <p className="text-gray-400 text-sm">
-                The future of learning with AI-powered video explanations.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Platform</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">How it Works</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Pricing</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Support</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Get In Touch</h4>
-              <p className="text-gray-400 text-sm">support@piyx.ai</p>
-            </div>
-          </div>
-          <div className="border-t border-white/10 pt-8 text-center text-gray-500 text-sm">
-            <p>Copyright © 2025 PIYX AI. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
