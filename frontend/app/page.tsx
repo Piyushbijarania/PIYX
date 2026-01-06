@@ -121,6 +121,9 @@ export default function Home() {
                       <option value={60}>1 min</option>
                       <option value={90}>1.5 min</option>
                       <option value={120}>2 min</option>
+                      <option value={180}>3 min</option>
+                      <option value={240}>4 min</option>
+                      <option value={300}>5 min</option>
                     </select>
                     <button 
                       className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-700 px-3 py-1.5 rounded-full text-sm transition-colors"
