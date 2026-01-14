@@ -58,7 +58,6 @@ export default function Home() {
           <div className="text-2xl font-bold">PIYX AI</div>
           <div className="flex items-center gap-6">
             <a href="#features" className="hover:text-blue-400 transition-colors">Features</a>
-            <a href="#how-it-works" className="hover:text-blue-400 transition-colors">How it Works</a>
             <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-full transition-colors">
               Get Started
             </button>
@@ -87,7 +86,7 @@ export default function Home() {
                   <span className="absolute top-0 left-0 w-[400%] h-full -translate-x-full animate-[glareTravel_3s_ease-in-out_infinite] pointer-events-none">
                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent blur-sm"></span>
                   </span>
-                </span> become <span className="text-white font-semibold">professors</span>
+                </span> become <span className="text-white font-semibold animate-[fadeIn_1s_ease-in-out] relative">professors</span>
               </span>
             </p>
 
@@ -95,7 +94,7 @@ export default function Home() {
             <div className="mb-6 max-w-4xl mx-auto">
               <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 border border-white/10 rounded-2xl p-1.5 shadow-2xl backdrop-blur-sm">
                 <textarea
-                  placeholder="Ask a question (will generate video)..."
+                  placeholder="Ask a question (Explain Universe...)"
                   className="w-full bg-transparent text-white placeholder-gray-500 px-6 py-3 rounded-xl focus:outline-none resize-none text-base"
                   rows={2}
                   value={question}
@@ -108,7 +107,7 @@ export default function Home() {
                       className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-700 px-3 py-1.5 rounded-full text-sm transition-colors"
                       disabled={isGenerating}
                     >
-                      <span className="text-xs">➕</span>
+                      <span className="">+</span>
                       <span>Upload</span>
                     </button>
                     <select
@@ -125,13 +124,6 @@ export default function Home() {
                       <option value={240}>4 min</option>
                       <option value={300}>5 min</option>
                     </select>
-                    <button 
-                      className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-700 px-3 py-1.5 rounded-full text-sm transition-colors"
-                      disabled={isGenerating}
-                    >
-                      <span className="text-xs">🌐</span>
-                      <span>English</span>
-                    </button>
                   </div>
                   <button 
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded-full transition-colors"
@@ -258,6 +250,27 @@ export default function Home() {
                 Get a personalized video explanation with visual animations in seconds
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+      {/* footer */}
+      <section id = "footer" className="pt-20 py-3 bg-gradient-to-b from-gray-900 to-[#0a0a0a">
+        <div className="flex flex-col justify-center ">
+          <div className="mt-14 px-4 text-center">
+            <h1 className="font-bold  text-xl">
+              PIYX AI 
+            </h1>
+          </div>
+          <div className="px-4 text-center">
+            <h1 className="relative z-10 text-xl font-bold text-white 
+             [text-shadow:0_10px_30px_rgba(59,130,246,0.8)]">
+                Where Prompts Become Professors
+            </h1>
+          </div>
+          <div className="text-center">
+            <h6 className="font-bold text-xs">
+              © 2026 - AniSight - ALL RIGHTS RESERVED 
+            </h6>
           </div>
         </div>
       </section>
